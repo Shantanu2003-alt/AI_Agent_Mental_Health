@@ -19,7 +19,7 @@ def set_theme(mode):
         <style>
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppViewBlockContainer"], .main, .block-container {
             background: #2d2f36 !important;
-            color: #f3f3f5 !important;
+            color: #fff !important;
         }
         .safe-space {
             background: rgba(50,50,60,0.92);
@@ -27,23 +27,23 @@ def set_theme(mode):
             padding: 2em 2em 1em 2em;
             box-shadow: 0 4px 32px 0 rgba(30,30,40,0.12);
         }
-        .big-title { font-size: 2.7rem; font-weight: bold; color: #f3f3f5; margin-bottom: 0.5em; }
+        .big-title { font-size: 2.7rem; font-weight: bold; color: #fff; margin-bottom: 0.5em; }
         .agent-badge { font-size: 1.5rem; margin-right: 0.5em; }
         .heart { color: #ffb6c1; font-size: 2.2rem; vertical-align: middle; }
         .stTextInput > div > input, .stTextArea > div > textarea, .stSelectbox > div > div, .stMultiSelect > div > div {
             background: #2d2f36 !important;
-            color: #f3f3f5 !important;
+            color: #fff !important;
         }
         [data-testid="stSidebar"], .css-1d391kg {
             background: #2d2f36 !important;
-            color: #f3f3f5 !important;
+            color: #fff !important;
         }
         .stAlert, .stInfo, .stSuccess, .stWarning {
             background-color: #393b41 !important;
-            color: #f3f3f5 !important;
+            color: #fff !important;
         }
         .markdown-text-container, .stMarkdown {
-            color: #f3f3f5 !important;
+            color: #fff !important;
         }
         </style>
         """, unsafe_allow_html=True)
