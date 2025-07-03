@@ -18,32 +18,32 @@ def set_theme(mode):
         st.markdown("""
         <style>
         html, body, [data-testid="stAppViewContainer"], [data-testid="stAppViewBlockContainer"], .main, .block-container {
-            background: #23272f !important;
-            color: #e0e6f0 !important;
+            background: #2d2f36 !important;
+            color: #f3f3f5 !important;
         }
         .safe-space {
-            background: rgba(40,40,60,0.92);
+            background: rgba(50,50,60,0.92);
             border-radius: 1.2em;
             padding: 2em 2em 1em 2em;
-            box-shadow: 0 4px 32px 0 rgba(30,30,40,0.16);
+            box-shadow: 0 4px 32px 0 rgba(30,30,40,0.12);
         }
-        .big-title { font-size: 2.7rem; font-weight: bold; color: #e0e6f0; margin-bottom: 0.5em; }
+        .big-title { font-size: 2.7rem; font-weight: bold; color: #f3f3f5; margin-bottom: 0.5em; }
         .agent-badge { font-size: 1.5rem; margin-right: 0.5em; }
         .heart { color: #ffb6c1; font-size: 2.2rem; vertical-align: middle; }
         .stTextInput > div > input, .stTextArea > div > textarea, .stSelectbox > div > div, .stMultiSelect > div > div {
-            background: #23272f !important;
-            color: #e0e6f0 !important;
+            background: #2d2f36 !important;
+            color: #f3f3f5 !important;
         }
         [data-testid="stSidebar"], .css-1d391kg {
-            background: #23272f !important;
-            color: #e0e6f0 !important;
+            background: #2d2f36 !important;
+            color: #f3f3f5 !important;
         }
         .stAlert, .stInfo, .stSuccess, .stWarning {
-            background-color: #2c3140 !important;
-            color: #e0e6f0 !important;
+            background-color: #393b41 !important;
+            color: #f3f3f5 !important;
         }
         .markdown-text-container, .stMarkdown {
-            color: #e0e6f0 !important;
+            color: #f3f3f5 !important;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -80,7 +80,7 @@ with col2:
     st.image(
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
         caption="You are not alone. This is your space.",
-        use_container_width=True  # FIXED DEPRECATION WARNING
+        use_container_width=True
     )
 
 # --- SUPPORT PLAN MODE ---
@@ -108,25 +108,18 @@ Your sleep averages **{state['sleep_pattern']} hours/night** and your stress is 
         assessment += "- Family problems can deeply affect mood and stress.\n"
     return assessment
 
-def action_agent(state, responses):
+def action_agent(state):
     action = ""
     if "Anxiety" in state['current_symptoms']:
         action += "- Try the 5-4-3-2-1 grounding technique when anxious.\n"
         action += "- Practice slow, deep breathing (inhale 4, hold 4, exhale 6) for 5 minutes.\n"
-        if responses.get("breathing_script"):
-            action += "\n**Guided Breathing:**\n- Inhale slowly for 4 seconds.\n- Hold for 4 seconds.\n- Exhale gently for 6 seconds.\n- Repeat for 5 cycles.\n"
     if "Fatigue" in state['current_symptoms']:
         action += "- Take brief breaks every hour, even if it's just stretching.\n"
         action += "- Stay hydrated and try to get some natural light during the day.\n"
     if "interview" in (state['recent_changes'] or "").lower():
-        if responses.get("interview_tips"):
-            action += "- Prepare answers to common questions and practice aloud.\n"
-            action += "- Visualize yourself succeeding in the interview.\n"
-            action += "- Remember: it's normal to feel nervous, and interviewers expect it.\n"
+        action += "- Interview anxiety is a common and manageable challenge.\n"
     if "family" in (state['recent_changes'] or "").lower():
-        if responses.get("family_tips"):
-            action += "- Try 'I feel' statements to express your needs without blame.\n"
-            action += "- Set boundaries around work and personal time if possible.\n"
+        action += "- Family problems can deeply affect mood and stress.\n"
     if "None" in state['support_system']:
         action += "- Consider reaching out to online support communities (e.g., 7 Cups, Reddit r/mentalhealth).\n"
         action += "- If you ever feel unsafe, please call a crisis line (988 in the US).\n"
@@ -143,6 +136,39 @@ def followup_agent(state):
     followup += "- Plan for stressful events (like interviews) by preparing, resting, and rewarding yourself after.\n"
     followup += "- If family issues persist, consider family counseling or support groups.\n"
     return followup
+
+# --- FOLLOW-UP TIPS DATA ---
+def show_followup_tips(key):
+    if key == "breathing_script":
+        st.markdown("""
+**Guided Breathing (5 Steps):**
+1. Sit comfortably and close your eyes if you wish.
+2. Inhale slowly through your nose for 4 seconds.
+3. Hold your breath for 4 seconds.
+4. Exhale gently through your mouth for 6 seconds.
+5. Repeat for 5 cycles, focusing on the sensation of your breath.
+""")
+    elif key == "interview_tips":
+        st.markdown("""
+**Interview Anxiety Tips (5 Steps):**
+1. Prepare answers to common questions and practice aloud.
+2. Visualize yourself succeeding in the interview.
+3. Remember: it's normal to feel nervous, and interviewers expect it.
+4. Practice grounding techniques before the interview.
+5. Reward yourself afterwards, regardless of the outcome.
+""")
+    elif key == "family_tips":
+        st.markdown("""
+**Family Communication Strategies (5 Steps):**
+1. Use "I feel" statements to express your needs without blame.
+2. Set clear boundaries around work and personal time.
+3. Choose calm moments for important conversations.
+4. Listen actively and validate each other's feelings.
+5. Seek support from a counselor or support group if needed.
+""")
+
+def comforting_lines():
+    st.info("That's perfectly okay. Remember, you can always revisit these resources later. You're doing your best, and that's enough. 💜")
 
 # --- LISTENER MODE ---
 def comforting_response(user_message):
@@ -203,33 +229,53 @@ if agent_mode == "Support Plan":
                 "recent_changes": recent_changes.strip(),
                 "current_symptoms": current_symptoms
             }
-            responses = {}
 
             with st.spinner("Analyzing your situation..."):
                 time.sleep(1.2)
                 st.success("Assessment complete.")
 
-            if "Anxiety" in current_symptoms:
-                responses["breathing_script"] = st.checkbox(
-                    "Would you like a short guided script for breathing exercises?", value=True
-                )
-            if "interview" in (recent_changes or "").lower():
-                responses["interview_tips"] = st.checkbox(
-                    "Would you like practical tips for managing interview anxiety?", value=True
-                )
-            if "family" in (recent_changes or "").lower():
-                responses["family_tips"] = st.checkbox(
-                    "Would you like communication strategies for family issues?", value=True
-                )
-
             st.markdown("## 📝 Situation Assessment")
             st.info(assessment_agent(state))
 
             st.markdown("## 🎯 Action Plan & Resources")
-            st.success(action_agent(state, responses))
+            st.success(action_agent(state))
 
             st.markdown("## 🔄 Long-term Support Strategy")
             st.warning(followup_agent(state))
+
+            # --- INTERACTIVE FOLLOW-UP ---
+            follow_up_questions = []
+            if "Anxiety" in current_symptoms:
+                follow_up_questions.append({
+                    "key": "breathing_script",
+                    "question": "Would you like a short guided script for breathing exercises?"
+                })
+            if "interview" in (recent_changes or "").lower():
+                follow_up_questions.append({
+                    "key": "interview_tips",
+                    "question": "Would you like practical tips for managing interview anxiety?"
+                })
+            if "family" in (recent_changes or "").lower():
+                follow_up_questions.append({
+                    "key": "family_tips",
+                    "question": "Would you like communication strategies for family issues?"
+                })
+
+            if follow_up_questions:
+                st.markdown("## 🔁 Follow-up")
+                followup_answers = {}
+                for item in follow_up_questions:
+                    followup_answers[item["key"]] = st.radio(
+                        item["question"], ["Yes", "No"], key=f"followup_{item['key']}"
+                    )
+
+                if st.button("Show Follow-up Tips"):
+                    for item in follow_up_questions:
+                        key = item["key"]
+                        if followup_answers[key] == "Yes":
+                            show_followup_tips(key)
+                        else:
+                            comforting_lines()
 
             st.markdown("""
             <div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
