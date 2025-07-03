@@ -17,12 +17,34 @@ def set_theme(mode):
     else:
         st.markdown("""
         <style>
-        body { background: linear-gradient(120deg, #232526 0%, #414345 100%); }
-        .safe-space { background: rgba(40,40,60,0.92); border-radius: 1.2em; padding: 2em 2em 1em 2em; box-shadow: 0 4px 32px 0 rgba(30,30,40,0.16); }
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stAppViewBlockContainer"], .main, .block-container {
+            background: #23272f !important;
+            color: #e0e6f0 !important;
+        }
+        .safe-space {
+            background: rgba(40,40,60,0.92);
+            border-radius: 1.2em;
+            padding: 2em 2em 1em 2em;
+            box-shadow: 0 4px 32px 0 rgba(30,30,40,0.16);
+        }
         .big-title { font-size: 2.7rem; font-weight: bold; color: #e0e6f0; margin-bottom: 0.5em; }
         .agent-badge { font-size: 1.5rem; margin-right: 0.5em; }
         .heart { color: #ffb6c1; font-size: 2.2rem; vertical-align: middle; }
-        .stTextInput > div > input, .stTextArea > div > textarea, .stSelectbox > div > div, .stMultiSelect > div > div { background: #232526 !important; color: #e0e6f0 !important; }
+        .stTextInput > div > input, .stTextArea > div > textarea, .stSelectbox > div > div, .stMultiSelect > div > div {
+            background: #23272f !important;
+            color: #e0e6f0 !important;
+        }
+        [data-testid="stSidebar"], .css-1d391kg {
+            background: #23272f !important;
+            color: #e0e6f0 !important;
+        }
+        .stAlert, .stInfo, .stSuccess, .stWarning {
+            background-color: #2c3140 !important;
+            color: #e0e6f0 !important;
+        }
+        .markdown-text-container, .stMarkdown {
+            color: #e0e6f0 !important;
+        }
         </style>
         """, unsafe_allow_html=True)
 
