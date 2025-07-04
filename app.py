@@ -1,8 +1,7 @@
 import streamlit as st
 from PIL import Image
 import time
-import base64
-from io import BytesIO
+import io
 from fpdf import FPDF
 
 # --- THEME SETUP ---
@@ -82,9 +81,16 @@ col1, col2, col3 = st.columns([1,2,1])
 with col2:
     st.image(
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-        caption="You are not alone. This is your space...",
+        caption="You are not alone. This is your space.",
         use_container_width=True
     )
+
+# --- SESSION LOGGING ---
+if "session_log" not in st.session_state:
+    st.session_state.session_log = []
+
+def log_session(text):
+    st.session_state.session_log.append(text)
 
 # --- SUPPORT PLAN MODE ---
 def assessment_agent(state):
@@ -191,6 +197,23 @@ def comforting_response(user_message):
         "Feel free to say as much or as little as you want."
     )
 
+# --- DOWNLOAD UTILITIES ---
+def get_full_session_text():
+    return "\n\n".join(st.session_state.session_log)
+
+def get_full_session_pdf():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=12)
+    for line in st.session_state.session_log:
+        for subline in line.split('\n'):
+            pdf.multi_cell(0, 10, subline)
+    pdf_output = io.BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+    return pdf_output
+
 # --- MAIN LOGIC ---
 if agent_mode == "Support Plan":
     st.markdown("## 🌱 Personal Information")
@@ -238,28 +261,57 @@ if agent_mode == "Support Plan":
                 st.success("Assessment complete.")
 
             st.markdown("## 📝 Situation Assessment")
-            st.info(assessment_agent(state))
+            assessment = assessment_agent(state)
+            st.info(assessment)
+            log_session("## Situation Assessment\n" + assessment)
 
             st.markdown("## 🎯 Action Plan & Resources")
-            st.success(action_agent(state))
+            action = action_agent(state)
+            st.success(action)
+            log_session("## Action Plan & Resources\n" + action)
 
             st.markdown("## 🔄 Long-term Support Strategy")
-            st.warning(followup_agent(state))
+            followup = followup_agent(state)
+            st.warning(followup)
+            log_session("## Long-term Support Strategy\n" + followup)
 
-            st.markdown("""
-            <div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
-            <b>⚠️ Important Notice</b><br>
-            This application is a supportive tool and does not replace professional mental health care.<br>
-            If you're experiencing thoughts of self-harm or severe crisis:<br>
-            <ul>
-            <li>Call National Crisis Hotline: <b>988</b></li>
-            <li>Call Emergency Services: <b>911</b></li>
-            <li>Seek immediate professional help</li>
-            </ul>
-            </div>
-            """, unsafe_allow_html=True)
-            st.balloons()
+            # --- INTERACTIVE FOLLOW-UP ---
+            follow_up_questions = []
+            if "Anxiety" in current_symptoms:
+                follow_up_questions.append({
+                    "key": "breathing_script",
+                    "question": "Would you like a short guided script for breathing exercises?"
+                })
+            if "interview" in (recent_changes or "").lower():
+                follow_up_questions.append({
+                    "key": "interview_tips",
+                    "question": "Would you like practical tips for managing interview anxiety?"
+                })
+            if "family" in (recent_changes or "").lower():
+                follow_up_questions.append({
+                    "key": "family_tips",
+                    "question": "Would you like communication strategies for family issues?"
+                })
 
+            if follow_up_questions:
+                st.markdown("## 🔁 Follow-up")
+                followup_answers = {}
+                for item in follow_up_questions:
+                    followup_answers[item["key"]] = st.radio(
+                        item["question"], ["Yes", "No"], key=f"followup_{item['key']}"
+                    )
+
+                if st.button("Show Follow-up Tips"):
+                    for item in follow_up_questions:
+                        key = item["key"]
+                        if followup_answers[key] == "Yes":
+                            show_followup_tips(key)
+                            log_session(f"## Follow-up: {key}\n(Tip shown)")
+                        else:
+                            comforting_lines()
+                            log_session(f"## Follow-up: {key}\n(Comforting line shown)")
+
+# --- LISTENER MODE ---
 elif agent_mode == "Listener (Vent & Comfort)":
     st.markdown("## 💬 Vent or Share Anything")
     st.markdown(
@@ -277,6 +329,7 @@ elif agent_mode == "Listener (Vent & Comfort)":
             st.session_state.vent_history.append(("user", user_message.strip()))
             agent_reply = comforting_response(user_message)
             st.session_state.vent_history.append(("agent", agent_reply))
+            log_session(f"You: {user_message.strip()}\nAgent: {agent_reply}")
         else:
             st.warning("Please write something to share.")
 
@@ -287,49 +340,50 @@ elif agent_mode == "Listener (Vent & Comfort)":
         else:
             st.markdown(f"<div style='background:#f8f9fa;padding:0.7em 1em;border-radius:0.8em;margin-bottom:1em;'><b>Agent:</b> {msg}</div>", unsafe_allow_html=True)
 
-    import base64
-from io import BytesIO
-from fpdf import FPDF
+# --- STRESS RELIEVER SONG & DOWNLOAD SECTION ---
+st.markdown("""
+---
+### 🎵 Stress Reliever Song
+Listen to "Weightless" by Marconi Union, a scientifically recognized stress-relief track:
 
-def create_download_link(content, filename, filetype):
-    b64 = base64.b64encode(content.encode()).decode()
-    href = f'<a href="data:file/{filetype};base64,{b64}" download="{filename}">📥 Download as {filetype.upper()}</a>'
-    return href
+<iframe width="100%" height="120" src="https://www.youtube.com/embed/UfcAVejslrU?si=J1AP15Blg4jtAw6L" title="Weightless by Marconi Union" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+""", unsafe_allow_html=True)
 
-# Prepare content
-if agent_mode == "Support Plan" and submit and mental_state.strip():
-    download_text = "📝 Situation Assessment:\n" + assessment_agent(state)
-    download_text += "\n🎯 Action Plan & Resources:\n" + action_agent(state)
-    download_text += "\n🔄 Long-term Support Strategy:\n" + followup_agent(state)
+st.markdown("""
+### ⬇️ Download Your Session
+You can download your full session as a text or PDF file for your records or to share with a professional.
+""")
 
-    st.markdown("### 📎 Download Your Plan")
-    st.markdown(create_download_link(download_text, "mental_support_plan.txt", "txt"), unsafe_allow_html=True)
+col_txt, col_pdf = st.columns(2)
+with col_txt:
+    txt_data = get_full_session_text()
+    st.download_button(
+        label="Download as TXT",
+        data=txt_data,
+        file_name="mental_wellbeing_session.txt",
+        mime="text/plain"
+    )
+with col_pdf:
+    pdf_data = get_full_session_pdf()
+    st.download_button(
+        label="Download as PDF",
+        data=pdf_data,
+        file_name="mental_wellbeing_session.pdf",
+        mime="application/pdf"
+    )
 
-    # Optional PDF
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", size=12)
-    for line in download_text.split('\n'):
-        pdf.multi_cell(0, 10, line)
-    buffer = BytesIO()
-    pdf.output(buffer)
-    b64_pdf = base64.b64encode(buffer.getvalue()).decode()
-    st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="mental_support_plan.pdf">📄 Download as PDF</a>', unsafe_allow_html=True)
+# --- HELPLINE SECTION ---
+st.markdown("""
+<div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
+<b>⚠️ Important Notice</b><br>
+This application is a supportive tool and does not replace professional mental health care.<br>
+If you're experiencing thoughts of self-harm or severe crisis:<br>
+<ul>
+<li>Call National Crisis Hotline: <b>988</b></li>
+<li>Call Emergency Services: <b>911</b></li>
+<li>Seek immediate professional help</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
 
-    st.markdown("### 🎵 Scientifically Proven Relaxation Music")
-    st.markdown("_Let this music play in the background while you reflect or relax._")
-    st.video("https://www.youtube.com/watch?v=UfcAVejslrU")
-    
-    st.markdown("""
-    <div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
-    <b>⚠️ Important Notice</b><br>
-    This application is a supportive tool and does not replace professional mental health care.<br>
-    If you're experiencing thoughts of self-harm or severe crisis:<br>
-    <ul>
-    <li>Call National Crisis Hotline: <b>988</b></li>
-    <li>Call Emergency Services: <b>911</b></li>
-    <li>Seek immediate professional help</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)   
+st.balloons()
