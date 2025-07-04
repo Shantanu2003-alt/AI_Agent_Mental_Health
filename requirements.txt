@@ -1,5 +1,2 @@
 streamlit
-pandas
-textblob
 pillow
-fpdf
