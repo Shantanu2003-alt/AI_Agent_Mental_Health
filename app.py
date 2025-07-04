@@ -357,26 +357,16 @@ Listen to "Weightless" by Marconi Union, a scientifically recognized stress-reli
 
 st.markdown("""
 ### ⬇️ Download Your Session
-You can download your full session as a text or PDF file for your records or to share with a professional.
+You can download your full session as a text file for your records or to share with a professional.
 """)
 
-col_txt, col_pdf = st.columns(2)
-with col_txt:
-    txt_data = get_full_session_text()
-    st.download_button(
-        label="Download as TXT",
-        data=txt_data,
-        file_name="mental_wellbeing_session.txt",
-        mime="text/plain"
-    )
-with col_pdf:
-    pdf_data = get_full_session_pdf()
-    st.download_button(
-        label="Download as PDF",
-        data=pdf_data,
-        file_name="mental_wellbeing_session.pdf",
-        mime="application/pdf"
-    )
+txt_data = get_full_session_text()
+st.download_button(
+    label="Download as TXT",
+    data=txt_data,
+    file_name="mental_wellbeing_session.txt",
+    mime="text/plain"
+)
 
 # --- HELPLINE SECTION ---
 st.markdown("""
