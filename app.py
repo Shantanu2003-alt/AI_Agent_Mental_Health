@@ -1,6 +1,9 @@
 import streamlit as st
 from PIL import Image
 import time
+import base64
+from io import BytesIO
+from fpdf import FPDF
 
 # --- THEME SETUP ---
 def set_theme(mode):
@@ -242,40 +245,6 @@ if agent_mode == "Support Plan":
 
             st.markdown("## 🔄 Long-term Support Strategy")
             st.warning(followup_agent(state))
-
-            # --- INTERACTIVE FOLLOW-UP ---
-            follow_up_questions = []
-            if "Anxiety" in current_symptoms:
-                follow_up_questions.append({
-                    "key": "breathing_script",
-                    "question": "Would you like a short guided script for breathing exercises?"
-                })
-            if "interview" in (recent_changes or "").lower():
-                follow_up_questions.append({
-                    "key": "interview_tips",
-                    "question": "Would you like practical tips for managing interview anxiety?"
-                })
-            if "family" in (recent_changes or "").lower():
-                follow_up_questions.append({
-                    "key": "family_tips",
-                    "question": "Would you like communication strategies for family issues?"
-                })
-
-            if follow_up_questions:
-                st.markdown("## 🔁 Follow-up")
-                followup_answers = {}
-                for item in follow_up_questions:
-                    followup_answers[item["key"]] = st.radio(
-                        item["question"], ["Yes", "No"], key=f"followup_{item['key']}"
-                    )
-
-                if st.button("Show Follow-up Tips"):
-                    for item in follow_up_questions:
-                        key = item["key"]
-                        if followup_answers[key] == "Yes":
-                            show_followup_tips(key)
-                        else:
-                            comforting_lines()
 
             st.markdown("""
             <div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
