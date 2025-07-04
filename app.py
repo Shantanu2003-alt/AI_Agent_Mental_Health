@@ -3,6 +3,7 @@ from PIL import Image
 import time
 import io
 from fpdf import FPDF
+import re
 
 # --- THEME SETUP ---
 def set_theme(mode):
@@ -177,7 +178,7 @@ def show_followup_tips(key):
 """)
 
 def comforting_lines():
-    st.info("That's perfectly okay. Remember, you can always revisit these resources later. You're doing your best, and that's enough. 💜")
+    st.info("That's perfectly okay. Remember, you can always revisit these resources later. You're doing your best, and that's enough.")
 
 # --- LISTENER MODE ---
 def comforting_response(user_message):
@@ -198,6 +199,10 @@ def comforting_response(user_message):
     )
 
 # --- DOWNLOAD UTILITIES ---
+def remove_emojis(text):
+    # Remove all non-latin-1 characters (including emojis)
+    return re.sub(r'[^\x00-\xff]', '', text)
+
 def get_full_session_text():
     return "\n\n".join(st.session_state.session_log)
 
@@ -207,10 +212,12 @@ def get_full_session_pdf():
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
     for line in st.session_state.session_log:
-        for subline in line.split('\n'):
+        # Remove emojis and non-latin-1 characters for PDF
+        safe_line = remove_emojis(line)
+        for subline in safe_line.split('\n'):
             pdf.multi_cell(0, 10, subline)
     pdf_output = io.BytesIO()
-    pdf.output(pdf_output)
+    pdf.output(pdf_output, 'F')
     pdf_output.seek(0)
     return pdf_output
 
@@ -311,7 +318,6 @@ if agent_mode == "Support Plan":
                             comforting_lines()
                             log_session(f"## Follow-up: {key}\n(Comforting line shown)")
 
-# --- LISTENER MODE ---
 elif agent_mode == "Listener (Vent & Comfort)":
     st.markdown("## 💬 Vent or Share Anything")
     st.markdown(
