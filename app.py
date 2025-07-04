@@ -79,7 +79,7 @@ col1, col2, col3 = st.columns([1,2,1])
 with col2:
     st.image(
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-        caption="You are not alone. This is your space.",
+        caption="You are not alone. This is your space...",
         use_container_width=True
     )
 
@@ -318,6 +318,40 @@ elif agent_mode == "Listener (Vent & Comfort)":
         else:
             st.markdown(f"<div style='background:#f8f9fa;padding:0.7em 1em;border-radius:0.8em;margin-bottom:1em;'><b>Agent:</b> {msg}</div>", unsafe_allow_html=True)
 
+    import base64
+from io import BytesIO
+from fpdf import FPDF
+
+def create_download_link(content, filename, filetype):
+    b64 = base64.b64encode(content.encode()).decode()
+    href = f'<a href="data:file/{filetype};base64,{b64}" download="{filename}">📥 Download as {filetype.upper()}</a>'
+    return href
+
+# Prepare content
+if agent_mode == "Support Plan" and submit and mental_state.strip():
+    download_text = "📝 Situation Assessment:\n" + assessment_agent(state)
+    download_text += "\n🎯 Action Plan & Resources:\n" + action_agent(state)
+    download_text += "\n🔄 Long-term Support Strategy:\n" + followup_agent(state)
+
+    st.markdown("### 📎 Download Your Plan")
+    st.markdown(create_download_link(download_text, "mental_support_plan.txt", "txt"), unsafe_allow_html=True)
+
+    # Optional PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=12)
+    for line in download_text.split('\n'):
+        pdf.multi_cell(0, 10, line)
+    buffer = BytesIO()
+    pdf.output(buffer)
+    b64_pdf = base64.b64encode(buffer.getvalue()).decode()
+    st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="mental_support_plan.pdf">📄 Download as PDF</a>', unsafe_allow_html=True)
+
+    st.markdown("### 🎵 Scientifically Proven Relaxation Music")
+    st.markdown("_Let this music play in the background while you reflect or relax._")
+    st.video("https://www.youtube.com/watch?v=UfcAVejslrU")
+    
     st.markdown("""
     <div style="background: #fff3cd; border-radius: 1em; padding: 1em; margin-top: 2em;">
     <b>⚠️ Important Notice</b><br>
