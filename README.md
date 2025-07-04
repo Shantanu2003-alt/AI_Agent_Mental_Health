@@ -1,7 +1,7 @@
 # Personal_AIAgent_Mental_Health
 A supportive mental health assistant powered by **multiple AI agents** - designed to offer emotional support, personalized action plans and a safe space to express your feelings.
 
-This is the live link of the application - https://aiagent-mentalhealth.streamlit.app/
+This is the live link of the application - https://aiagent-mentalhealth.streamlit.app/  or   https://personal-aiagent-mentalhealth.streamlit.app/
 
 # Overview
 This is a **Streamlit-based web application** that provides users with a judgment-free environment to assess their mental wellbeing and receive guidance. 
