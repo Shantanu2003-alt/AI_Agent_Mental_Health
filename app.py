@@ -1,10 +1,5 @@
 import streamlit as st
-import datetime
-import pandas as pd
-import io
-from textblob import TextBlob
-from PIL import Image, ImageDraw, ImageFont
-from fpdf import FPDF
+from PIL import Image
 import time
 
 # --- THEME SETUP ---
@@ -87,106 +82,6 @@ with col2:
         caption="You are not alone. This is your space.",
         use_container_width=True
     )
-
-# --- Mood Tracker ---
-if "mood_log" not in st.session_state:
-    st.session_state.mood_log = []
-
-with st.expander("📊 Daily Mood Tracker"):
-    today = datetime.date.today()
-    mood_score = st.slider("Mood (1-10)", 1, 10, 5, key="mood_score")
-    stress_score = st.slider("Stress (1-10)", 1, 10, 5, key="stress_score")
-    sleep_hours = st.slider("Sleep Hours", 0, 12, 7, key="sleep_hours")
-
-    if st.button("Log Today"):
-        st.session_state.mood_log.append({
-            "date": today,
-            "mood": mood_score,
-            "stress": stress_score,
-            "sleep": sleep_hours
-        })
-        st.success("Entry saved for today.")
-
-    if st.session_state.mood_log:
-        df = pd.DataFrame(st.session_state.mood_log)
-        df = df.drop_duplicates(subset=["date"], keep="last").sort_values("date")
-        st.line_chart(df.set_index("date"))
-
-# --- Sentiment Analysis ---
-def analyze_sentiment(text):
-    blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
-    if polarity > 0.5:
-        return "Very Positive"
-    elif polarity > 0:
-        return "Positive"
-    elif polarity < -0.5:
-        return "Very Negative"
-    elif polarity < 0:
-        return "Negative"
-    else:
-        return "Neutral"
-
-# --- Journal Export (.txt) ---
-def create_journal_export():
-    content = "--- Session Journal ---\n"
-    for speaker, msg in st.session_state.get("vent_history", []):
-        content += f"{speaker.title()}: {msg}\n\n"
-    return io.StringIO(content)
-
-with st.expander("📓 Export Journal"):
-    if st.session_state.get("vent_history"):
-        buffer = create_journal_export()
-        st.download_button("Download Journal (.txt)", buffer, file_name="journal.txt")
-    else:
-        st.info("No journal content yet.")
-
-# --- Guided Audio ---
-with st.expander("🎧 Guided Relaxation Audio"):
-    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
-    st.markdown("Guided audio for calming and focus. More tracks coming soon.")
-
-# --- Plan/Assessment Export (PDF/Image) ---
-def export_to_pdf(content):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", size=12)
-    for line in content.split("\n"):
-        pdf.multi_cell(0, 10, line)
-    output = io.BytesIO()
-    pdf.output(output)
-    output.seek(0)
-    return output
-
-def export_to_image(content):
-    font = ImageFont.load_default()
-    lines = content.split("\n")
-    width = 800
-    height = 20 * (len(lines) + 4)
-    img = Image.new("RGB", (width, height), color="white")
-    draw = ImageDraw.Draw(img)
-    y = 20
-    for line in lines:
-        draw.text((30, y), line, fill="black", font=font)
-        y += 20
-    output = io.BytesIO()
-    img.save(output, format="PNG")
-    output.seek(0)
-    return output
-
-with st.expander("📤 Export Your Support Plan"):
-    if "last_plan" in st.session_state:
-        full_text = st.session_state["last_plan"]
-        col1, col2 = st.columns(2)
-        with col1:
-            pdf_data = export_to_pdf(full_text)
-            st.download_button("📄 Download as PDF", data=pdf_data.getvalue(), file_name="support_plan.pdf")
-        with col2:
-            image_data = export_to_image(full_text)
-            st.download_button("🖼️ Download as Image", data=image_data.getvalue(), file_name="support_plan.png", mime="image/png")
-    else:
-        st.info("No plan generated yet. Generate one in Support Plan mode first.")
 
 # --- SUPPORT PLAN MODE ---
 def assessment_agent(state):
@@ -340,23 +235,13 @@ if agent_mode == "Support Plan":
                 st.success("Assessment complete.")
 
             st.markdown("## 📝 Situation Assessment")
-            assessment = assessment_agent(state)
-            st.info(assessment)
+            st.info(assessment_agent(state))
 
             st.markdown("## 🎯 Action Plan & Resources")
-            action = action_agent(state)
-            st.success(action)
+            st.success(action_agent(state))
 
             st.markdown("## 🔄 Long-term Support Strategy")
-            followup = followup_agent(state)
-            st.warning(followup)
-
-            # Save plan for export
-            st.session_state["last_plan"] = (
-                "Situation Assessment:\n" + assessment + "\n"
-                "Action Plan & Resources:\n" + action + "\n"
-                "Long-term Support Strategy:\n" + followup
-            )
+            st.warning(followup_agent(state))
 
             # --- INTERACTIVE FOLLOW-UP ---
             follow_up_questions = []
