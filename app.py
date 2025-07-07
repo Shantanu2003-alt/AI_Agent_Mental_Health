@@ -282,42 +282,66 @@ if agent_mode == "Support Plan":
             st.warning(followup)
             log_session("## Long-term Support Strategy\n" + followup)
 
-            # INTERACTIVE FOLLOW-UP
-            follow_up_questions = []
-            if "Anxiety" in current_symptoms:
-                follow_up_questions.append({
-                    "key": "breathing_script",
-                    "question": "Would you like a short guided script for breathing exercises?"
-                })
-            if "interview" in (recent_changes or "").lower():
-                follow_up_questions.append({
-                    "key": "interview_tips",
-                    "question": "Would you like practical tips for managing interview anxiety?"
-                })
-            if "family" in (recent_changes or "").lower():
-                follow_up_questions.append({
-                    "key": "family_tips",
-                    "question": "Would you like communication strategies for family issues?"
-                })
+# STATIC FOLLOW-UP SECTION
+st.markdown("## 🔁 Follow-up")
+st.markdown("Would you like a short guided script for the following?")
 
-            if follow_up_questions:
-                st.markdown("## 🔁 Follow-up")
-                followup_answers = {}
-                for item in follow_up_questions:
-                    followup_answers[item["key"]] = st.radio(
-                        item["question"], ["Yes", "No"], key=f"followup_{item['key']}"
-                    )
+followup_answers = {
+    "breathing_script": st.radio(
+        "1. Breathing exercises", ["Yes", "No"], key="followup_breathing"
+    ),
+    "interview_tips": st.radio(
+        "2. Managing interview anxiety", ["Yes", "No"], key="followup_interview"
+    ),
+    "family_tips": st.radio(
+        "3. Dealing with family problems", ["Yes", "No"], key="followup_family"
+    ),
+}
 
-                if st.button("Show Follow-up Tips"):
-                    for item in follow_up_questions:
-                        key = item["key"]
-                        if followup_answers[key] == "Yes":
-                            show_followup_tips(key)
-                            log_session(f"## Follow-up: {key}\n(Tip shown)")
-                        else:
-                            comforting_lines()
-                            log_session(f"## Follow-up: {key}\n(Comforting line shown)")
+if st.button("Show Follow-up Tips"):
+    if followup_answers["breathing_script"] == "Yes":
+        st.markdown("""
+### 🧘 Guided Breathing Script (5 Steps)
+1. Sit in a quiet, comfortable place with your back straight.
+2. Close your eyes and inhale slowly through your nose for 4 seconds.
+3. Hold your breath for 4 seconds.
+4. Exhale slowly through your mouth for 6 seconds.
+5. Repeat this cycle for 5–10 rounds, focusing only on your breath.
+""")
+        log_session("## Follow-up: Breathing Script\n(Tip shown)")
+    else:
+        comforting_lines()
+        log_session("## Follow-up: Breathing Script\n(Comforting line shown)")
 
+    if followup_answers["interview_tips"] == "Yes":
+        st.markdown("""
+### 🎤 Interview Anxiety Tips (5 Steps)
+1. Practice mock interviews and prepare key stories using STAR format.
+2. Use positive visualization — imagine yourself succeeding calmly.
+3. Write down your strengths and repeat them before the interview.
+4. Do a 1-minute grounding breath before logging in or entering the room.
+5. Remind yourself: nerves = caring. Interviewers expect nervousness!
+""")
+        log_session("## Follow-up: Interview Tips\n(Tip shown)")
+    else:
+        comforting_lines()
+        log_session("## Follow-up: Interview Tips\n(Comforting line shown)")
+
+    if followup_answers["family_tips"] == "Yes":
+        st.markdown("""
+### 🏡 Family Communication Tips (5 Steps)
+1. Use calm, "I feel" statements instead of blame ("I feel unheard when...").
+2. Set boundaries clearly but kindly — it's okay to protect your peace.
+3. Choose calm moments to talk, not during a heated argument.
+4. Focus on listening actively instead of reacting.
+5. Seek help from a family counselor or group if patterns repeat.
+""")
+        log_session("## Follow-up: Family Tips\n(Tip shown)")
+    else:
+        comforting_lines()
+        log_session("## Follow-up: Family Tips\n(Comforting line shown)")
+
+   
 elif agent_mode == "Listener (Vent & Comfort)":
     st.markdown("## 💬 Vent or Share Anything")
     st.markdown(
