@@ -282,7 +282,7 @@ if agent_mode == "Support Plan":
             st.warning(followup)
             log_session("## Long-term Support Strategy\n" + followup)
 
-# STATIC FOLLOW-UP SECTION
+# --- ADD THE FOLLOW-UP BLOCK HERE ---
 st.markdown("## 🔁 Follow-up")
 st.markdown("Would you like a short guided script for the following?")
 
@@ -341,11 +341,10 @@ if st.button("Show Follow-up Tips"):
         comforting_lines()
         log_session("## Follow-up: Family Tips\n(Comforting line shown)")
 
-   
 elif agent_mode == "Listener (Vent & Comfort)":
     st.markdown("## 💬 Vent or Share Anything")
     st.markdown(
-        "This space is just for you to express yourself. "
+        "This space is just for you to express yourself. Do not worry about any judgement... "
         "The agent will listen and respond with comfort and encouragement. "
         "Type as much or as little as you want."
     )
